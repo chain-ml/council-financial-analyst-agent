@@ -1,4 +1,4 @@
-council-ai=0.0.7
+council-ai==0.0.7
 pandasai==0.6.10
 tiktoken==0.4.0
 sentence-transformers==2.2.2
