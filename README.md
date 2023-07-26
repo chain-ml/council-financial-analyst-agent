@@ -31,6 +31,8 @@ For document retrieval, the Agent extracts the text from the pdf, builds a vecto
 
 See `constants.py` for additional configurable parameters, such as version of OpenAI LLM models.
 
+The steps to initialize the agent and its tools are in `config.py` and `agent_config.py`.
+
 ## Running the Agent
 
 The Agent can be run using the `/notebooks/4_financial_analyst_agent.ipynb` notebook that recreates the project's source code in a step-by-step process.
