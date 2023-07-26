@@ -1,0 +1,6 @@
+.env
+.DS_Store
+**/cache
+**/pandasai.log
+**/__pycache__
+**/notebooks/.ipynb_checkpoints/
