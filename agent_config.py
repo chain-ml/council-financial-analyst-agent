@@ -3,12 +3,11 @@ import os
 from string import Template
 
 from council.chains import Chain
-from council.llm import OpenAILLM, OpenAILLMConfiguration, LLMMessage
+from council.llm import OpenAILLM, LLMMessage
 from council.skills import LLMSkill, PromptToMessages
 from council.contexts import SkillContext
 from council.prompt import PromptBuilder
 from council.runners import Parallel
-from council.utils import Option
 
 import constants
 from config import Config
@@ -34,12 +33,8 @@ class AgentConfig:
         self.retriever = Retriever(self.config, self.index_retriever)
 
         # Initializing agent config
-        llm_skill_config = OpenAILLMConfiguration.from_env()
-        controller_config = OpenAILLMConfiguration.from_env()
-        llm_skill_config.model = Option(constants.DOC_AND_GOOGLE_RETRIEVAL_LLM)
-        controller_config.model = Option(constants.CONTROLLER_LLM)
-        self._llm_skill_model = OpenAILLM(config=llm_skill_config)
-        self._controller_model = OpenAILLM(config=controller_config)
+        self._llm_skill_model = OpenAILLM.from_env(model=constants.DOC_AND_GOOGLE_RETRIEVAL_LLM)
+        self._controller_model = OpenAILLM.from_env(model=constants.CONTROLLER_LLM)
         self._init_skills()
         self.chains = self._init_chains()
         self.controller = Controller(self._controller_model, response_threshold=5)
