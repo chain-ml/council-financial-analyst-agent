@@ -40,7 +40,8 @@ class CustomGoogleSearchSkill(GoogleSearchSkill):
             response_count = len(resp)
             if response_count > 0:
                 return self.build_success_message(
-                    f"{self._name} {response_count} responses for {prompt.message}", json.dumps([r.dict() for r in resp])
+                    f"{self._name} {response_count} responses for {prompt.message}",
+                    json.dumps([r.dict() for r in resp]),
                 )
             return self.build_error_message("no response")
         return self.build_error_message("API keys for Google Search not provided")
@@ -49,7 +50,7 @@ class CustomGoogleSearchSkill(GoogleSearchSkill):
 class CustomGoogleNewsSkill(GoogleNewsSkill):
     """
     A skill that performs a Google News search using the reformulated query from the controller.
-    
+
     Based on GoogleNewsSkill: https://github.com/chain-ml/council/blob/main/council/skills/google/google_news_skill.py
     """
 
@@ -59,7 +60,8 @@ class CustomGoogleNewsSkill(GoogleNewsSkill):
         response_count = len(resp)
         if response_count > 0:
             return self.build_success_message(
-                f"gnews {response_count} responses for {prompt.message}", json.dumps([r.dict() for r in resp])
+                f"gnews {response_count} responses for {prompt.message}",
+                json.dumps([r.dict() for r in resp]),
             )
         return self.build_error_message("no response")
 
@@ -96,7 +98,7 @@ class GoogleAggregatorSkill(SkillBase):
 class PandasSkill(SkillBase):
     """
     Skill to converse with pandas Dataframe using PandasAI.
-    
+
     PandasAI: https://github.com/gventuri/pandas-ai/tree/main
     """
 
@@ -112,8 +114,13 @@ class PandasSkill(SkillBase):
 
         try:
             response = pandas_ai(data_frame=df, prompt=query)
-            if "Unfortunately, I was not able to answer your question, because of the following error:" in response:
+            if (
+                "Unfortunately, I was not able to answer your question, because of the following error:"
+                in response
+            ):
                 return self.build_error_message(response)
             return self.build_success_message(response)
         except Exception as e:
-            return self.build_error_message(f"PandasAI failed due to following error: {e}")
+            return self.build_error_message(
+                f"PandasAI failed due to following error: {e}"
+            )

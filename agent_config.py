@@ -12,7 +12,13 @@ from council.runners import Parallel
 
 import constants
 from config import Config
-from skills import DocRetrievalSkill, GoogleAggregatorSkill, PandasSkill, CustomGoogleNewsSkill, CustomGoogleSearchSkill
+from skills import (
+    DocRetrievalSkill,
+    GoogleAggregatorSkill,
+    PandasSkill,
+    CustomGoogleNewsSkill,
+    CustomGoogleSearchSkill,
+)
 from retrieval import Retriever
 from controller import Controller, LLMFilter
 
@@ -29,20 +35,30 @@ class AgentConfig:
             embedding_model_name=constants.EMBEDDING_MODEL_NAME,
         )
         self.index = self.config.initialize()
-        self.index_retriever = self.index.as_retriever(similarity_top_k=constants.NUM_RETRIEVED_DOCUMENTS)
+        self.index_retriever = self.index.as_retriever(
+            similarity_top_k=constants.NUM_RETRIEVED_DOCUMENTS
+        )
         self.retriever = Retriever(self.config, self.index_retriever)
 
         # Initializing agent config
-        self._llm_skill_model = OpenAILLM.from_env(model=constants.DOC_AND_GOOGLE_RETRIEVAL_LLM)
+        self._llm_skill_model = OpenAILLM.from_env(
+            model=constants.DOC_AND_GOOGLE_RETRIEVAL_LLM
+        )
         self._controller_model = OpenAILLM.from_env(model=constants.CONTROLLER_LLM)
         self._init_skills()
         self.chains = self._init_chains()
-        self.controller = Controller(llm=self._controller_model, chains=self.chains, response_threshold=5)
+        self.controller = Controller(
+            llm=self._controller_model, chains=self.chains, response_threshold=5
+        )
         self.evaluator = BasicEvaluator()
         self.filter = LLMFilter(llm=self._controller_model)
 
     def load_config(self):
-        return {"controller": self.controller, "evaluator": self.evaluator, "filter": self.filter}
+        return {
+            "controller": self.controller,
+            "evaluator": self.evaluator,
+            "filter": self.filter,
+        }
 
     def _init_skills(self):
         # Document retrieval skills
@@ -54,7 +70,9 @@ class AgentConfig:
         self.google_aggregator_skill = GoogleAggregatorSkill()
 
         # Pandas skills
-        self.pandas_skill = PandasSkill(api_token=os.getenv("OPENAI_API_KEY"), model=constants.PANDAS_LLM)
+        self.pandas_skill = PandasSkill(
+            api_token=os.getenv("OPENAI_API_KEY"), model=constants.PANDAS_LLM
+        )
 
         # LLM Skill
         self.llm_skill = LLMSkill(

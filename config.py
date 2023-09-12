@@ -6,7 +6,12 @@ from llama_index.indices.base import BaseIndex
 from transformers import AutoTokenizer
 from tiktoken import Encoding
 
-from llama_index import VectorStoreIndex, SimpleDirectoryReader, ServiceContext, StorageContext
+from llama_index import (
+    VectorStoreIndex,
+    SimpleDirectoryReader,
+    ServiceContext,
+    StorageContext,
+)
 from llama_index.langchain_helpers.text_splitter import TokenTextSplitter
 from llama_index.node_parser import SimpleNodeParser
 from llama_index import load_index_from_storage
@@ -66,9 +71,13 @@ class Config:
         index_id = constants.COMPANY_NAME
 
         if check_index_files(constants.PERSIST_DIR):
-            storage_context = StorageContext.from_defaults(persist_dir=constants.PERSIST_DIR)
+            storage_context = StorageContext.from_defaults(
+                persist_dir=constants.PERSIST_DIR
+            )
             index = load_index_from_storage(
-                storage_context=storage_context, service_context=service_context, index_id=index_id
+                storage_context=storage_context,
+                service_context=service_context,
+                index_id=index_id,
             )
 
             return index
@@ -77,7 +86,9 @@ class Config:
         logging.info('message="initialize index started"')
         # Create index
         documents = SimpleDirectoryReader(constants.DOCUMENT_DATA_DIR).load_data()
-        index = VectorStoreIndex.from_documents(documents, service_context=service_context)
+        index = VectorStoreIndex.from_documents(
+            documents, service_context=service_context
+        )
         index.set_index_id(index_id)
         # Save index to disk
         index.storage_context.persist(f"{constants.PERSIST_DIR}")

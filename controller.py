@@ -3,7 +3,13 @@ from typing import List, Tuple
 from string import Template
 
 from council.chains import Chain
-from council.contexts import AgentContext, ScoredChatMessage, ChatMessage, ChatMessageKind, LLMContext
+from council.contexts import (
+    AgentContext,
+    ScoredChatMessage,
+    ChatMessage,
+    ChatMessageKind,
+    LLMContext,
+)
 from council.controllers import LLMController, ExecutionUnit
 from council.filters import FilterBase
 from council.llm import LLMMessage, LLMBase
@@ -35,16 +41,29 @@ class Controller(LLMController):
         """Generates an execution plan for the agent based on the provided context, chains, and budget."""
         response = self._call_llm(context)
         # Separate reformulated query and chain selection from response
-        query_reformulation_result, chain_selection_result = self.parse_response(response)
+        query_reformulation_result, chain_selection_result = self.parse_response(
+            response
+        )
         # Create execution plan and provide reformulated query to each execution unit as its initial state
-        parsed = [self._parse_line(line, self._chains) for line in chain_selection_result.splitlines()]
-        filtered = [r.unwrap() for r in parsed if r.is_some() and r.unwrap()[1] > self._response_threshold]
+        parsed = [
+            self._parse_line(line, self._chains)
+            for line in chain_selection_result.splitlines()
+        ]
+        filtered = [
+            r.unwrap()
+            for r in parsed
+            if r.is_some() and r.unwrap()[1] > self._response_threshold
+        ]
         if (filtered is None) or (len(filtered) == 0):
             return []
 
         filtered.sort(key=lambda item: item[1], reverse=True)
         result = [
-            ExecutionUnit(r[0], context.budget, initial_state=ChatMessage.chain(query_reformulation_result))
+            ExecutionUnit(
+                r[0],
+                context.budget,
+                initial_state=ChatMessage.chain(query_reformulation_result),
+            )
             for r in filtered
             if r is not None
         ]
@@ -52,10 +71,15 @@ class Controller(LLMController):
         return result[: self._top_k]
 
     def _build_llm_messages(self, context):
-        answer_choices = "\n ".join([f"name: {c.name}, description: {c.description}" for c in self._chains])
+        answer_choices = "\n ".join(
+            [f"name: {c.name}, description: {c.description}" for c in self._chains]
+        )
         # Load prompts for LLM and substitute parameters
-        system_prompt = "You are an assistant responsible to identify the intent of the user."
-        controller_get_plan_prompt = Template("""
+        system_prompt = (
+            "You are an assistant responsible to identify the intent of the user."
+        )
+        controller_get_plan_prompt = Template(
+            """
         Use the latest user query and the conversational history to identify the intent of the user. 
         Break this task down into 2 subtasks. First perform subtask 1 and then subtask 2.
         
@@ -108,7 +132,8 @@ class Controller(LLMController):
         ---
         Subtask 2:
         {subtask2_results}
-        """)
+        """
+        )
         user_prompt = controller_get_plan_prompt.substitute(
             conversational_history=self.build_chat_history(context),
             user_query=context.chat_history.last_user_message.message,
@@ -144,15 +169,22 @@ class Controller(LLMController):
     def parse_response(response: str) -> Tuple[str, str]:
         """Function to separate reformulated query and chain selection from LLM response."""
         query_reformulation_response = (
-            response.split("---")[0].replace("Subtask 1:", "").replace("Subtask 1: ", "").strip()
+            response.split("---")[0]
+            .replace("Subtask 1:", "")
+            .replace("Subtask 1: ", "")
+            .strip()
         )
-        chain_selection_response = response.split("---")[1].replace("Subtask 2:", "").replace("Subtask 2: ", "").strip()
+        chain_selection_response = (
+            response.split("---")[1]
+            .replace("Subtask 2:", "")
+            .replace("Subtask 2: ", "")
+            .strip()
+        )
 
         return query_reformulation_response, chain_selection_response
 
 
 class LLMFilter(FilterBase):
-
     def __init__(self, llm: LLMBase):
         super().__init__()
         self._llm = self.new_monitor("llm", llm)
@@ -160,7 +192,9 @@ class LLMFilter(FilterBase):
     def _execute(self, context: AgentContext) -> List[ScoredChatMessage]:
         """Selects responses from the agent's context."""
         messages = self._build_llm_messages(context)
-        llm_response = self._llm.inner.post_chat_request(LLMContext.from_context(context, self._llm), messages=messages)
+        llm_response = self._llm.inner.post_chat_request(
+            LLMContext.from_context(context, self._llm), messages=messages
+        )
 
         return [ScoredChatMessage(ChatMessage.agent(llm_response.first_choice), 1.0)]
 
@@ -171,7 +205,8 @@ class LLMFilter(FilterBase):
         for message in agent_messages:
             context += f"Response: {message.message.message}\n\n"
 
-        select_response_prompt = Template("""
+        select_response_prompt = Template(
+            """
         # Instructions
         - The provided context is a list of research data answering the user query from different sources.
         - Combine the following data from multiple sources into a single research report to answer the query.
@@ -185,10 +220,9 @@ class LLMFilter(FilterBase):
         $query
         
         Answer:
-        """)
-        prompt = select_response_prompt.substitute(
-            context=context, query=query
+        """
         )
+        prompt = select_response_prompt.substitute(context=context, query=query)
         return [
             self._build_system_prompt(company=constants.COMPANY_NAME),
             LLMMessage.user_message(prompt),

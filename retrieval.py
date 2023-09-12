@@ -9,6 +9,7 @@ from llama_index.schema import NodeWithScore
 
 class Retriever:
     """Class to retrieve text chunks from Llama Index and create context for LLM."""
+
     def __init__(self, config: Config, retriever: VectorIndexRetriever):
         self.llm_tokenizer = config.llm_tokenizer
         self.retriever = retriever
