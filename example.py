@@ -10,17 +10,15 @@ import dotenv
 dotenv.load_dotenv()
 
 from council.agents import Agent
-from council.runners import Budget
-from council.contexts import AgentContext, ChatHistory
+from council.contexts import AgentContext, Budget
 
 from agent_config import AgentConfig
 
 # Loading all agent configuration into an Agent class 
 agent = Agent(**AgentConfig().load_config())
 # Initializing context for the Agent
-chat_history = ChatHistory()
-chat_history.add_user_message("What is the financial performance of Microsoft?")
-run_context = AgentContext(chat_history)
+run_context = AgentContext.from_user_message("What is the financial performance of Microsoft?", budget=Budget(600))
 # Executing Agent
-result = agent.execute(run_context, Budget(600))
-print(result.best_message.message)
+result = agent.execute(run_context)
+print(f"\nresult:\n{result.best_message.message}")
+print(f"\nexecution log:\n{run_context._execution_context._executionLog.to_json()}")

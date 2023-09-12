@@ -1,7 +1,8 @@
 import logging
-from typing import List, Union
+from typing import List, Optional
 
 import tiktoken
+from llama_index.indices.base import BaseIndex
 from transformers import AutoTokenizer
 from tiktoken import Encoding
 
@@ -27,13 +28,14 @@ class ChunkingTokenizer:
 class Config:
     """Configurations required for initializing the agent"""
 
-    _llm_tokenizer: Union[None, Encoding] = None
+    _llm_tokenizer: Optional[Encoding] = None
 
     def __init__(
         self,
         encoding_name: str,
         embedding_model_name: str,
     ):
+        self._chunking_tokenizer = None
         self.encoding_name = encoding_name
         self.embedding_model_name = embedding_model_name
 
@@ -56,7 +58,7 @@ class Config:
         # Initialize vector index
         return self._init_index()
 
-    def _init_index(self) -> bool:
+    def _init_index(self) -> VectorStoreIndex:
         node_parser = SimpleNodeParser(text_splitter=self._text_splitter)
         service_context = ServiceContext.from_defaults(
             embed_model=f"local:{self.embedding_model_name}", node_parser=node_parser

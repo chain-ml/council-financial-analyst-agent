@@ -3,6 +3,7 @@ import os
 from string import Template
 
 from council.chains import Chain
+from council.evaluators import BasicEvaluator
 from council.llm import OpenAILLM, LLMMessage
 from council.skills import LLMSkill, PromptToMessages
 from council.contexts import SkillContext
@@ -13,8 +14,7 @@ import constants
 from config import Config
 from skills import DocRetrievalSkill, GoogleAggregatorSkill, PandasSkill, CustomGoogleNewsSkill, CustomGoogleSearchSkill
 from retrieval import Retriever
-from controller import Controller
-from evaluator import Evaluator
+from controller import Controller, LLMFilter
 
 import dotenv
 
@@ -37,11 +37,12 @@ class AgentConfig:
         self._controller_model = OpenAILLM.from_env(model=constants.CONTROLLER_LLM)
         self._init_skills()
         self.chains = self._init_chains()
-        self.controller = Controller(self._controller_model, response_threshold=5)
-        self.evaluator = Evaluator()
+        self.controller = Controller(llm=self._controller_model, chains=self.chains, response_threshold=5)
+        self.evaluator = BasicEvaluator()
+        self.filter = LLMFilter(llm=self._controller_model)
 
     def load_config(self):
-        return {"controller": self.controller, "chains": self.chains, "evaluator": self.evaluator}
+        return {"controller": self.controller, "evaluator": self.evaluator, "filter": self.filter}
 
     def _init_skills(self):
         # Document retrieval skills
@@ -89,7 +90,8 @@ class AgentConfig:
 
         return [self.doc_retrieval_chain, self.search_chain, self.pandas_chain]
 
-    def _build_context_messages(self, context: SkillContext) -> List[LLMMessage]:
+    @staticmethod
+    def _build_context_messages(context: SkillContext) -> List[LLMMessage]:
         """Context messages function for LLMSkill"""
 
         prompt = """Use the following pieces of context to answer the query.

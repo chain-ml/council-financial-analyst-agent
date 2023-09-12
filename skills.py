@@ -1,6 +1,5 @@
 import json
 
-from council.runners import Budget
 from council.contexts import SkillContext, ChatMessage
 from council.skills import SkillBase
 from council.skills.google import GoogleSearchSkill, GoogleNewsSkill
@@ -20,10 +19,9 @@ class DocRetrievalSkill(SkillBase):
         super().__init__(name="document_retrieval")
         self.retriever = retriever
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        query = context.current.messages[-1].message
+    def execute(self, context: SkillContext) -> ChatMessage:
+        query = context.current.last_message.message
         context = self.retriever.retrieve_docs(query)
-
         return self.build_success_message(context)
 
 
@@ -34,10 +32,10 @@ class CustomGoogleSearchSkill(GoogleSearchSkill):
     Based on GoogleSearchSkill: https://github.com/chain-ml/council/blob/main/council/skills/google/google_search_skill.py
     """
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         # Execute the skill only if the API keys required for Google Search are provided
         if self.gs:
-            prompt = context.current.messages[-1]
+            prompt = context.current.last_message
             resp = self.gs.execute(query=prompt.message, nb_results=5)
             response_count = len(resp)
             if response_count > 0:
@@ -55,8 +53,8 @@ class CustomGoogleNewsSkill(GoogleNewsSkill):
     Based on GoogleNewsSkill: https://github.com/chain-ml/council/blob/main/council/skills/google/google_news_skill.py
     """
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        prompt = context.current.messages[-1]
+    def execute(self, context: SkillContext) -> ChatMessage:
+        prompt = context.current.last_message
         resp = self.gn.execute(query=prompt.message, nb_results=5)
         response_count = len(resp)
         if response_count > 0:
@@ -74,7 +72,7 @@ class GoogleAggregatorSkill(SkillBase):
     ):
         super().__init__(name="google_aggregator")
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
+    def execute(self, context: SkillContext) -> ChatMessage:
         gsearch_results = (
             json.loads(context.current.last_message_from_skill("gsearch").data)
             if context.current.last_message_from_skill("gsearch").is_ok
@@ -106,8 +104,8 @@ class PandasSkill(SkillBase):
         super().__init__(name="pandas")
         self.llm = OpenAI(api_token=api_token, model=model)
 
-    def execute(self, context: SkillContext, budget: Budget) -> ChatMessage:
-        query = context.current.messages[-1].message
+    def execute(self, context: SkillContext) -> ChatMessage:
+        query = context.current.last_message.message
 
         df = read_file_to_df(get_filename(constants.MARKET_DATA_DIR))
         pandas_ai = PandasAI(self.llm, conversational=True)

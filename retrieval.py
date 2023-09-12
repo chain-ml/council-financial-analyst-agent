@@ -14,7 +14,7 @@ class Retriever:
         self.retriever = retriever
 
     def retrieve_docs(self, query) -> str:
-        """End-to-end functiont to retrieve most similar nodes and build the context"""
+        """End-to-end function to retrieve most similar nodes and build the context"""
         nodes = self.retriever.retrieve(query)
         docs = self._extract_text(nodes)
         context = self._build_context(docs)
