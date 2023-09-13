@@ -6,9 +6,9 @@ COMPANY_NAME = "Microsoft"
 COMPANY_TICKER = "MSFT"
 
 # LLM Model Selection
-DOC_AND_GOOGLE_RETRIEVAL_LLM = 'gpt-3.5-turbo'
-PANDAS_LLM = 'gpt-3.5-turbo'
-CONTROLLER_LLM = 'gpt-4'
+DOC_AND_GOOGLE_RETRIEVAL_LLM = "gpt-3.5-turbo"
+PANDAS_LLM = "gpt-3.5-turbo"
+CONTROLLER_LLM = "gpt-4"
 
 # Document retrieval
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"

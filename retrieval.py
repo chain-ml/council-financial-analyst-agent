@@ -9,12 +9,13 @@ from llama_index.schema import NodeWithScore
 
 class Retriever:
     """Class to retrieve text chunks from Llama Index and create context for LLM."""
+
     def __init__(self, config: Config, retriever: VectorIndexRetriever):
         self.llm_tokenizer = config.llm_tokenizer
         self.retriever = retriever
 
     def retrieve_docs(self, query) -> str:
-        """End-to-end functiont to retrieve most similar nodes and build the context"""
+        """End-to-end function to retrieve most similar nodes and build the context"""
         nodes = self.retriever.retrieve(query)
         docs = self._extract_text(nodes)
         context = self._build_context(docs)
