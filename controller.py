@@ -78,7 +78,7 @@ class Controller(LLMController):
         system_prompt = (
             "You are an assistant responsible to identify the intent of the user."
         )
-        controller_get_plan_prompt = Template(
+        controller_prompt = Template(
             """
         Use the latest user query and the conversational history to identify the intent of the user. 
         Break this task down into 2 subtasks. First perform subtask 1 and then subtask 2.
@@ -134,7 +134,7 @@ class Controller(LLMController):
         {subtask2_results}
         """
         )
-        user_prompt = controller_get_plan_prompt.substitute(
+        user_prompt = controller_prompt.substitute(
             conversational_history=self.build_chat_history(context),
             user_query=context.chat_history.last_user_message.message,
             answer_choices=answer_choices,
@@ -205,7 +205,7 @@ class LLMFilter(FilterBase):
         for message in agent_messages:
             context += f"Response: {message.message.message}\n\n"
 
-        select_response_prompt = Template(
+        filter_prompt = Template(
             """
         # Instructions
         - The provided context is a list of research data answering the user query from different sources.
@@ -222,7 +222,7 @@ class LLMFilter(FilterBase):
         Answer:
         """
         )
-        prompt = select_response_prompt.substitute(context=context, query=query)
+        prompt = filter_prompt.substitute(context=context, query=query)
         return [
             self._build_system_prompt(company=constants.COMPANY_NAME),
             LLMMessage.user_message(prompt),
