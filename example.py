@@ -4,7 +4,7 @@ logging.basicConfig(
     format="[%(asctime)s %(levelname)s %(threadName)s %(name)s:%(funcName)s:%(lineno)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S%z",
 )
-logging.getLogger("council").setLevel(logging.DEBUG)
+logging.getLogger("council").setLevel(logging.INFO)
 
 import dotenv
 
@@ -24,4 +24,4 @@ run_context = AgentContext.from_user_message(
 # Executing Agent
 result = agent.execute(run_context)
 print(f"\nresult:\n{result.best_message.message}")
-print(f"\nexecution log:\n{run_context._execution_context._executionLog.to_json()}")
+print(f"\nexecution log:\n{run_context.execution_log_to_json()}")

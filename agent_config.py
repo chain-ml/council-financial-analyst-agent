@@ -20,7 +20,8 @@ from skills import (
     CustomGoogleSearchSkill,
 )
 from retrieval import Retriever
-from controller import Controller, LLMFilter
+from controller import Controller
+from filter import LLMFilter
 
 import dotenv
 

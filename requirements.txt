@@ -1,6 +1,6 @@
-council-ai==0.0.11
-pandasai==0.6.12
+council-ai==0.0.12
+pandasai==0.8.4
 tiktoken==0.4.0
 sentence-transformers==2.2.2
-pypdf==3.16.0
-llama-index==0.8.24
+pypdf==3.16.1
+llama-index==0.8.30
