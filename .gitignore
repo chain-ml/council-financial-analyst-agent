@@ -1,5 +1,9 @@
 .env
 .DS_Store
+.idea/
+
+storage
+
 **/cache
 **/pandasai.log
 **/__pycache__

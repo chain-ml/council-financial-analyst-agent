@@ -2,17 +2,18 @@ import logging
 from typing import List, Tuple
 from string import Template
 
-from council.chains import Chain
+from council.chains import Chain, ChainBase
 from council.contexts import (
     AgentContext,
     ScoredChatMessage,
     ChatMessage,
     ChatMessageKind,
-    LLMContext,
+    LLMContext, ContextLogger,
 )
 from council.controllers import LLMController, ExecutionUnit
 from council.filters import FilterBase
 from council.llm import LLMMessage, LLMBase
+from council.utils import Option
 
 import constants
 
@@ -46,7 +47,7 @@ class Controller(LLMController):
         )
         # Create execution plan and provide reformulated query to each execution unit as its initial state
         parsed = [
-            self._parse_line(line, self._chains)
+            self.parse_line(line, context.logger)
             for line in chain_selection_result.splitlines()
         ]
         filtered = [
@@ -69,6 +70,21 @@ class Controller(LLMController):
         ]
 
         return result[: self._top_k]
+
+    def parse_line(self, line: str, logger: ContextLogger) -> Option[Tuple[ChainBase, int]]:
+        result: Option[Tuple[ChainBase, int]] = Option.none()
+        name: str = ""
+        line = line.lower().removeprefix("name:")
+        try:
+            (name, score, _j) = line.split(";", 3)
+            name = name.strip().casefold()
+            chain = next(filter(lambda item: item.name.casefold() == name, self.chains))
+            score = score.replace("score:", "").strip()
+            result = Option.some((chain, int(score)))
+        except StopIteration:
+            logger.warning(f'message="no chain found with name `{name}`"')
+        finally:
+            return result
 
     def _build_llm_messages(self, context):
         answer_choices = "\n ".join(
